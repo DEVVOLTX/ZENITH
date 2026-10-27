@@ -1,4 +1,5 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
     branches: [main]
@@ -9,17 +10,34 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+
+      # لو مفيش package-lock.json استخدم npm install بدل npm ci
+      - name: Install
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      # بيحدد basePath تلقائياً من اسم الريبو (ويتجاهله لو الريبو user.github.io)
+      - name: Build
+        run: |
+          REPO="${GITHUB_REPOSITORY#*/}"
+          if [[ "$REPO" == *.github.io ]]; then export NEXT_PUBLIC_BASE_PATH=""; else export NEXT_PUBLIC_BASE_PATH="/$REPO"; fi
+          echo "BASE PATH = '$NEXT_PUBLIC_BASE_PATH'"
+          npm run build
+          touch out/.nojekyll
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
@@ -29,6 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
