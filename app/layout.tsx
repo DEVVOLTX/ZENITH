@@ -2,8 +2,12 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Shell from '@/components/Shell';
 
+const base = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export const metadata: Metadata = {
-  title: 'Zenith — Productivity Workspace', manifest: '/manifest.json', icons: { icon: [{ url: '/favicon.ico', sizes: 'any' }, { url: '/icon-192.png', type: 'image/png' }], apple: '/icon-192.png' },
+  title: 'Zenith — Productivity Workspace',
+  manifest: `${base}/manifest.json`,
+  icons: { icon: [{ url: `${base}/favicon.ico`, sizes: 'any' }, { url: `${base}/icon-192.png`, type: 'image/png' }], apple: `${base}/icon-192.png` },
   appleWebApp: { capable: true, title: 'Zenith', statusBarStyle: 'black-translucent' },
 };
 export const viewport: Viewport = { themeColor: '#7c3aed', width: 'device-width', initialScale: 1 };
