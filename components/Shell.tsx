@@ -24,7 +24,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const tm = useTimer(); const empty = useStore((s) => !s.tasks.length && !s.habits.length && !s.goals.length); const [qa, setQa] = useState(''); const [qaOpen, setQaOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false); const [pop, setPop] = useState(false);
 
-  useEffect(() => { hydrate(); if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') navigator.serviceWorker.register('/sw.js').catch(() => {}); }, [hydrate]);
+  useEffect(() => { hydrate(); if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') navigator.serviceWorker.register((process.env.NEXT_PUBLIC_BASE_PATH || '') + '/sw.js').catch(() => {}); }, [hydrate]);
   useEffect(() => {
     if (!ready) return; const r = document.documentElement;
     r.dataset.theme = settings.theme; r.lang = settings.lang; r.dir = settings.lang === 'ar' ? 'rtl' : 'ltr'; r.style.setProperty('--primary', primaryRgb(settings.color));
