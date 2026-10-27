@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root, [data-theme='midnight'] { --bg: 15 15 26; --card: 26 26 46; --fg: 241 241 250; --primary: 124 58 237; }
+[data-theme='dark'] { --bg: 10 10 12; --card: 26 26 30; --fg: 244 244 245; }
+[data-theme='light'] { --bg: 243 243 250; --card: 255 255 255; --fg: 20 20 35; }
+
+html, body { background: rgb(var(--bg)); color: rgb(var(--fg)); min-height: 100%; }
+body { font-family: ui-sans-serif, system-ui, 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif; }
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(600px 400px at 85% -5%, rgb(var(--primary) / .22), transparent), radial-gradient(500px 400px at 0% 100%, rgb(var(--primary) / .12), transparent); }
+@layer components {
+  .glass { background: rgb(var(--card) / .65); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgb(var(--fg) / .08); }
+  .field { @apply w-full rounded-xl bg-fg/10 px-3 py-2 text-sm outline-none placeholder:text-fg/40 focus:ring-2 focus:ring-primary; }
+  .md h1 { @apply mb-2 text-xl font-bold; } .md h2 { @apply mb-2 text-lg font-bold; } .md h3 { @apply mb-1 font-semibold; }
+  .md p { @apply mb-2; } .md ul { @apply mb-2 list-disc ps-5; } .md ol { @apply mb-2 list-decimal ps-5; }
+  .md code { @apply rounded bg-fg/10 px-1; } .md pre { @apply mb-2 overflow-x-auto rounded-xl bg-fg/10 p-3; } .md a { @apply text-primary underline; }
+  .md blockquote { @apply mb-2 border-s-4 border-primary/60 ps-3 text-fg/70; }
+}
+select option { background: rgb(var(--card)); color: rgb(var(--fg)); }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+.fs:fullscreen { display: grid; place-content: center; padding: 2rem; background: rgb(var(--bg)); }
