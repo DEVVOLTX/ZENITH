@@ -11,6 +11,9 @@ import Stats from '@/components/modules/Stats';
 import Settings from '@/components/modules/Settings';
 
 const M: Record<string, ComponentType> = { tasks: Tasks, habits: Habits, calendar: Calendar, goals: Goals, notes: Notes, focus: Focus, stats: Stats, settings: Settings };
-export default function Page({ params }: { params: { module: string } }) {
-  const C = M[params.module]; if (!C) return notFound(); return <C />;
+
+export default function ModuleClient({ slug }: { slug: string }) {
+  const C = M[slug];
+  if (!C) return notFound();
+  return <C />;
 }
