@@ -1,0 +1,6 @@
+Zenith — Baccalaureate Engineering Track template
+
+The template in lib/templates.ts has been updated using the syllabus supplied by the user.
+It includes Arabic texts, grammar, rhetoric and the story; English Units 1–3 and grammar; History Units 1–3 (12 lessons) plus Term 2 Units 4–6; and all 23 Programming & AI lessons, with review and test tasks.
+
+Note: the History Term 2 topics were supplied only as unit titles, so they are included as unit-level tasks rather than invented lesson titles. English Unit 1–3 items follow the supplied list. A production build has not been run in this environment.

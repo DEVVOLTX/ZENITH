@@ -2,10 +2,11 @@
   "name": "zenith",
   "version": "1.0.0",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start" },
+  "engines": { "node": ">=18.17" },
+  "scripts": { "dev": "next dev", "build": "next build", "start": "npx serve out", "typecheck": "tsc --noEmit" },
   "dependencies": {
     "clsx": "^2.1.1", "date-fns": "^3.6.0", "framer-motion": "^11.2.0", "html-to-image": "^1.11.11", "idb": "^8.0.0",
-    "lucide-react": "^0.400.0", "next": "14.2.15", "react": "^18.3.1", "react-dom": "^18.3.1",
+    "lucide-react": "^0.400.0", "next": "^14.2.15", "react": "^18.3.1", "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1", "recharts": "^2.12.7", "tailwind-merge": "^2.4.0", "zustand": "^4.5.4"
   },
   "devDependencies": {

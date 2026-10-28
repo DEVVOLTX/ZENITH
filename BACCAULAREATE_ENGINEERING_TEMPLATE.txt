@@ -1,0 +1,13 @@
+تمت إضافة قالب جديد داخل lib/templates.ts باسم:
+baccalaureate_engineering
+
+اسم القالب الظاهر:
+بكالوريا – مسار الهندسة 🏗️
+
+يشمل مهام العربي والإنجليزي والتاريخ والبرمجة والذكاء الاصطناعي، بالإضافة إلى عادات وأهداف للمذاكرة.
+مهم: مهام الإنجليزي والتاريخ والبرمجة عبارة عن خطة بداية قابلة للتعديل؛ طابق أسماء الدروس وترتيبها مع فهرس كتاب الوزارة الرسمي.
+
+SCHEDULE / COMMITMENTS
+- The Calendar module now supports fixed commitments such as school, lessons, gym/workouts, outings, and personal appointments.
+- Each commitment stores a date, start time, end time, optional location and notes, and can repeat weekly on the same weekday.
+- Commitments are saved with the app's local data and shown on the calendar. Study-task auto-planning into free time is not implemented yet.
