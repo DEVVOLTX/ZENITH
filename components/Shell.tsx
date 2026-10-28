@@ -14,6 +14,7 @@ import Onboarding from './Onboarding';
 import Avatar from './Avatar';
 import SmartFab from './SmartFab';
 import CommandPalette from './CommandPalette';
+import InstallButton from './InstallButton';
 
 const NAV = [['/', 'dashboard', LayoutDashboard], ['/tasks', 'tasks', CheckSquare], ['/habits', 'habits', Flame], ['/calendar', 'calendar', CalendarDays], ['/goals', 'goals', Target],
   ['/notes', 'notes', StickyNote], ['/focus', 'focus', Timer], ['/stats', 'stats', BarChart3], ['/settings', 'settings', Settings]] as const;
@@ -50,11 +51,13 @@ export default function Shell({ children }: { children: ReactNode }) {
       <div className={cn(collapsed ? 'md:ps-16' : 'md:ps-56')}>
         <header className="glass sticky top-0 z-20 flex items-center gap-2 rounded-none border-0 border-b px-3 py-2.5 md:px-6">
           <span className="text-lg font-bold text-primary md:hidden">Zenith</span>
+          <div className="hidden sm:block"><InstallButton lang={settings.lang} /></div>
           <div className="relative ms-auto max-w-sm flex-1">
             <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-fg/40" />
             <input className="field ps-9" placeholder={t('search')} value={query} onChange={(e) => { setQuery(e.target.value); if (e.target.value && !/^\/(tasks|notes)/.test(path)) router.push('/tasks'); }} />
           </div>
           <button onClick={() => window.dispatchEvent(new Event('zenith:cmd'))} className="hidden rounded-xl bg-fg/10 px-3 py-2 text-xs text-fg/60 hover:bg-fg/20 sm:block" aria-label="command palette">Ctrl K</button>
+          <div className="sm:hidden"><InstallButton lang={settings.lang} /></div>
           <button onClick={() => setSettings({ lang: settings.lang === 'ar' ? 'en' : 'ar' })} className="flex items-center gap-1 rounded-xl bg-fg/10 px-3 py-2 text-sm hover:bg-fg/20" aria-label="language"><Languages size={16} />{settings.lang === 'ar' ? 'EN' : 'ع'}</button>
           <div className="relative">
             <button onClick={() => setPop(!pop)} className="rounded-xl bg-fg/10 p-2.5 hover:bg-fg/20" aria-label="theme"><Palette size={16} /></button>
