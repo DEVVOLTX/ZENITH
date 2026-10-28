@@ -11,14 +11,15 @@ interface T { mode: Mode; total: number; left: number; running: boolean; endAt: 
 
 let iv: ReturnType<typeof setInterval> | undefined;
 let ctx: AudioContext | null = null; let src: AudioBufferSourceNode | null = null;
+const getCtx = () => (ctx ??= new (window.AudioContext || (window as any).webkitAudioContext)());
 
 function beep() {
-  try { ctx ??= new AudioContext(); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 880; g.gain.value = 0.2; o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.6); } catch { /* ignore */ }
+  try { const ctx = getCtx(); ctx.resume(); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 880; g.gain.value = 0.2; o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.6); } catch { /* ignore */ }
 }
 let lfo: OscillatorNode | null = null;
 function ambient(k: Amb) {
   src?.stop(); lfo?.stop(); src = null; lfo = null; if (k === 'off') return;
-  ctx ??= new AudioContext(); ctx.resume();
+  let ctx: AudioContext; try { ctx = getCtx(); } catch { return; } ctx.resume();
   const len = ctx.sampleRate * 4, b = ctx.createBuffer(1, len, ctx.sampleRate), d = b.getChannelData(0); let l = 0;
   for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; if (k === 'rain') d[i] = w * 0.5; else { l = (l + 0.02 * w) / 1.02; d[i] = l * 3.5; } }
   src = ctx.createBufferSource(); src.buffer = b; src.loop = true;
@@ -31,7 +32,7 @@ function ambient(k: Amb) {
 function finish() {
   const s = useTimer.getState(), st = useStore.getState(); beep();
   if (s.mode === 'focus') st.addSession({ duration: MIN.focus, taskId: s.taskId || undefined });
-  if ('Notification' in window && Notification.permission === 'granted') new Notification('Zenith', { body: tr(st.settings.lang, 'done') });
+  try { if ('Notification' in window && Notification.permission === 'granted') new Notification('Zenith', { body: tr(st.settings.lang, 'done') }); } catch { /* Android Chrome يمنع new Notification */ }
   const n = useStore.getState().sessions.filter((x) => isDay(x.completedAt, dkey())).length;
   const next: Mode = s.mode === 'focus' ? (n % 4 === 0 ? 'long' : 'short') : 'focus';
   useTimer.setState({ mode: next, total: MIN[next] * 60, left: MIN[next] * 60, running: false });
@@ -45,7 +46,7 @@ export const useTimer = create<T>((set, get) => ({
   setMode: (m) => { clearInterval(iv); set({ mode: m, total: MIN[m] * 60, left: MIN[m] * 60, running: false }); },
   start: () => {
     if (get().running) return;
-    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch { /* ignore */ }
     set({ running: true, endAt: Date.now() + get().left * 1000 }); iv = setInterval(tick, 500);
   },
   pause: () => { clearInterval(iv); set({ running: false }); },

@@ -49,7 +49,9 @@ export const useStore = create<S>((set) => ({
     if (!d) { try { d = JSON.parse(localStorage.getItem('zenith-backup') || 'null'); } catch { /* ignore */ } }
     let st: any = null; try { st = JSON.parse(localStorage.getItem('zenith-settings') || 'null'); } catch { /* ignore */ }
     const settings = { ...DEF, lang: navigator.language.startsWith('ar') ? 'ar' : 'en', ...(d?.settings || {}), ...(st || {}) } as Settings;
-    set({ ...EMPTY, ...(d || {}), settings, ready: true });
+    const arr = (x: unknown) => (Array.isArray(x) ? x : []);
+    const habits = arr(d?.habits).map((h: Habit) => ({ ...h, completions: arr(h.completions), streak: calcStreak(arr(h.completions), h.frozen) }));
+    set({ tasks: arr(d?.tasks), habits, goals: arr(d?.goals), notes: arr(d?.notes), sessions: arr(d?.sessions), events: arr(d?.events), settings, ready: true });
   },
   setSettings: (p) => set((s) => ({ settings: { ...s.settings, ...p } })),
   setQuery: (q) => set({ query: q }),
@@ -71,21 +73,30 @@ export const useStore = create<S>((set) => ({
   addEvent: (e) => set((s) => ({ events: [...s.events, { id: uid(), ...e }] })),
   updateEvent: (id, p) => set((s) => ({ events: upd(s.events, id, p) })),
   delEvent: (id) => set((s) => ({ events: s.events.filter((x) => x.id !== id) })),
-  importData: (d) => set((s) => ({ ...EMPTY, ...d, settings: d.settings ? { ...s.settings, ...d.settings } : s.settings })),
+  importData: (d) => set((s) => { const arr = <T,>(x: unknown) => (Array.isArray(x) ? (x as T[]) : []); return { tasks: arr<Task>(d.tasks), habits: arr<Habit>(d.habits).map((h) => ({ ...h, completions: arr<string>(h.completions), streak: calcStreak(arr<string>(h.completions), h.frozen) })), goals: arr<Goal>(d.goals), notes: arr<Note>(d.notes).map((n) => ({ ...n, tags: arr<string>(n.tags) })), sessions: arr<FocusSession>(d.sessions), events: arr<ScheduleEvent>(d.events), settings: d.settings && typeof d.settings === 'object' ? { ...s.settings, ...d.settings } : s.settings }; }),
   clearAll: () => set({ ...EMPTY }),
   addData: (d) => set((s) => ({ tasks: [...(d.tasks || []), ...s.tasks], habits: [...s.habits, ...(d.habits || [])], goals: [...s.goals, ...(d.goals || [])], notes: [...(d.notes || []), ...s.notes], sessions: [...s.sessions, ...(d.sessions || [])], events: [...s.events, ...(d.events || [])] })),
-  clearSample: () => set((s) => { const k = (x: { id: string }) => !x.id.startsWith('demo_'); return { tasks: s.tasks.filter(k), habits: s.habits.filter(k), goals: s.goals.filter(k), notes: s.notes.filter(k), sessions: s.sessions.filter(k) }; }),
+  clearSample: () => set((s) => { const k = (x: { id: string }) => !x.id.startsWith('demo_'); return { tasks: s.tasks.filter(k), habits: s.habits.filter(k), goals: s.goals.filter(k), notes: s.notes.filter(k), sessions: s.sessions.filter(k), events: s.events.filter(k) }; }),
   loadSample: (lang) => { useStore.getState().clearSample(); useStore.getState().addData(buildSample(lang)); },
   freezeHabit: (id) => set((s) => ({ habits: s.habits.map((h) => { if (h.id !== id) return h; const y = dkey(subDays(new Date(), 1)), fz = h.frozen || []; if (h.completions.includes(y) || fz.includes(y) || fz.filter((x) => x.startsWith(y.slice(0, 7))).length >= 2) return h; const nf = [...fz, y]; return { ...h, frozen: nf, streak: calcStreak(h.completions, nf) }; }) })),
 }));
 
 if (typeof window !== 'undefined') {
-  let h: ReturnType<typeof setTimeout>;
+  let h: ReturnType<typeof setTimeout> | undefined, prev: S | undefined;
+  const save = () => {
+    const s = useStore.getState(); if (!s.ready) return;
+    const d = { tasks: s.tasks, habits: s.habits, goals: s.goals, notes: s.notes, sessions: s.sessions, events: s.events, settings: s.settings };
+    dbSet('state', d); try { localStorage.setItem('zenith-backup', JSON.stringify(d)); } catch { /* quota */ }
+  };
   useStore.subscribe((s) => {
-    if (!s.ready) return; clearTimeout(h);
-    h = setTimeout(() => {
-      const d = { tasks: s.tasks, habits: s.habits, goals: s.goals, notes: s.notes, sessions: s.sessions, events: s.events, settings: s.settings };
-      dbSet('state', d); try { localStorage.setItem('zenith-backup', JSON.stringify(d)); } catch { /* quota */ }
-    }, 250);
+    if (!s.ready) return;
+    // لا نكتب في التخزين لو اللي اتغير هو نص البحث فقط
+    const changed = !prev || prev.tasks !== s.tasks || prev.habits !== s.habits || prev.goals !== s.goals || prev.notes !== s.notes || prev.sessions !== s.sessions || prev.events !== s.events || prev.settings !== s.settings;
+    prev = s; if (!changed) return;
+    clearTimeout(h); h = setTimeout(save, 250);
   });
+  // لو التبويب اتقفل قبل انتهاء الـ debounce نحفظ فورًا (منع فقدان آخر تعديل)
+  const flush = () => { if (h) { clearTimeout(h); h = undefined; save(); } };
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
 }
