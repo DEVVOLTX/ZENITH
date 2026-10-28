@@ -10,7 +10,8 @@ export interface Habit { id: string; name: string; icon: string; color: string; 
 export interface Goal { id: string; title: string; target: number; current: number; milestones: { id?: string; title: string; done: boolean }[] }
 export interface Note { id: string; title: string; content: string; pinned: boolean; tags: string[]; updatedAt: string }
 export interface FocusSession { id: string; duration: number; completedAt: string; taskId?: string }
-export interface Data { tasks: Task[]; habits: Habit[]; goals: Goal[]; notes: Note[]; sessions: FocusSession[] }
+export interface ScheduleEvent { id: string; title: string; kind: 'school' | 'lesson' | 'gym' | 'outing' | 'personal' | 'other'; date: string; startTime: string; endTime: string; repeatWeekly: boolean; location?: string; notes?: string }
+export interface Data { tasks: Task[]; habits: Habit[]; goals: Goal[]; notes: Note[]; sessions: FocusSession[]; events: ScheduleEvent[] }
 export interface Settings { theme: 'light' | 'dark' | 'midnight'; color: string; lang: 'ar' | 'en'; onboarded?: boolean; name?: string; avatar?: string }
 
 export const calcStreak = (c: string[], fz: string[] = []) => {
@@ -25,7 +26,7 @@ export const bestStreak = (c: string[]) => {
 export const pct = (g: Goal) => (g.target ? Math.min(100, Math.round((g.current / g.target) * 100)) : 0);
 
 const DEF: Settings = { theme: 'midnight', color: 'violet', lang: 'en' };
-const EMPTY: Data = { tasks: [], habits: [], goals: [], notes: [], sessions: [] };
+const EMPTY: Data = { tasks: [], habits: [], goals: [], notes: [], sessions: [], events: [] };
 const upd = <T extends { id: string }>(a: T[], id: string, p: Partial<T>) => a.map((x) => (x.id === id ? { ...x, ...p } : x));
 
 interface S extends Data {
@@ -36,6 +37,7 @@ interface S extends Data {
   addGoal(g: { title: string; target: number }): void; updateGoal(id: string, p: Partial<Goal>): void; delGoal(id: string): void;
   addNote(): string; updateNote(id: string, p: Partial<Note>): void; delNote(id: string): void;
   addSession(s: { duration: number; taskId?: string }): void;
+  addEvent(e: Omit<ScheduleEvent, 'id'>): void; updateEvent(id: string, p: Partial<ScheduleEvent>): void; delEvent(id: string): void;
   addData(d: Partial<Data>): void; loadSample(lang: string): void; clearSample(): void; freezeHabit(id: string): void;
   importData(d: Partial<Data> & { settings?: Settings }): void; clearAll(): void;
 }
@@ -66,9 +68,12 @@ export const useStore = create<S>((set) => ({
   updateNote: (id, p) => set((s) => ({ notes: upd(s.notes, id, { ...p, updatedAt: new Date().toISOString() }) })),
   delNote: (id) => set((s) => ({ notes: s.notes.filter((x) => x.id !== id) })),
   addSession: (x) => set((s) => ({ sessions: [...s.sessions, { id: uid(), completedAt: new Date().toISOString(), ...x }] })),
+  addEvent: (e) => set((s) => ({ events: [...s.events, { id: uid(), ...e }] })),
+  updateEvent: (id, p) => set((s) => ({ events: upd(s.events, id, p) })),
+  delEvent: (id) => set((s) => ({ events: s.events.filter((x) => x.id !== id) })),
   importData: (d) => set((s) => ({ ...EMPTY, ...d, settings: d.settings ? { ...s.settings, ...d.settings } : s.settings })),
   clearAll: () => set({ ...EMPTY }),
-  addData: (d) => set((s) => ({ tasks: [...(d.tasks || []), ...s.tasks], habits: [...s.habits, ...(d.habits || [])], goals: [...s.goals, ...(d.goals || [])], notes: [...(d.notes || []), ...s.notes], sessions: [...s.sessions, ...(d.sessions || [])] })),
+  addData: (d) => set((s) => ({ tasks: [...(d.tasks || []), ...s.tasks], habits: [...s.habits, ...(d.habits || [])], goals: [...s.goals, ...(d.goals || [])], notes: [...(d.notes || []), ...s.notes], sessions: [...s.sessions, ...(d.sessions || [])], events: [...s.events, ...(d.events || [])] })),
   clearSample: () => set((s) => { const k = (x: { id: string }) => !x.id.startsWith('demo_'); return { tasks: s.tasks.filter(k), habits: s.habits.filter(k), goals: s.goals.filter(k), notes: s.notes.filter(k), sessions: s.sessions.filter(k) }; }),
   loadSample: (lang) => { useStore.getState().clearSample(); useStore.getState().addData(buildSample(lang)); },
   freezeHabit: (id) => set((s) => ({ habits: s.habits.map((h) => { if (h.id !== id) return h; const y = dkey(subDays(new Date(), 1)), fz = h.frozen || []; if (h.completions.includes(y) || fz.includes(y) || fz.filter((x) => x.startsWith(y.slice(0, 7))).length >= 2) return h; const nf = [...fz, y]; return { ...h, frozen: nf, streak: calcStreak(h.completions, nf) }; }) })),
@@ -79,7 +84,7 @@ if (typeof window !== 'undefined') {
   useStore.subscribe((s) => {
     if (!s.ready) return; clearTimeout(h);
     h = setTimeout(() => {
-      const d = { tasks: s.tasks, habits: s.habits, goals: s.goals, notes: s.notes, sessions: s.sessions, settings: s.settings };
+      const d = { tasks: s.tasks, habits: s.habits, goals: s.goals, notes: s.notes, sessions: s.sessions, events: s.events, settings: s.settings };
       dbSet('state', d); try { localStorage.setItem('zenith-backup', JSON.stringify(d)); } catch { /* quota */ }
     }, 250);
   });
