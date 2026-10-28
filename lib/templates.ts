@@ -124,7 +124,7 @@ const EXTRA: Record<string, { task: [L, string, Priority]; habit: [L, string, st
 };
 const mkTask = (title: string, category: string, priority: Priority, dueDate?: string): Task => ({ id: uid(), title, description: '', priority, category, dueDate, completed: false, createdAt: new Date().toISOString() });
 const mkHabit = (name: string, icon: string, color: string): Habit => ({ id: uid(), name, icon, color, streak: 0, completions: [] });
-const E: Data = { tasks: [], habits: [], goals: [], notes: [], sessions: [] };
+const E: Data = { tasks: [], habits: [], goals: [], notes: [], sessions: [], events: [] };
 
 export function buildTemplate(key: string, lang: string): Data {
   const t = TPL[key], today = dkey();
@@ -154,5 +154,5 @@ export function buildSample(lang: string): Data {
   const goals = gs.map(([n, target, current, ms], i) => ({ id: `demo_g${i}`, title: pick(n, lang), target, current, milestones: ms.map((m, j) => ({ id: `demo_m${i}${j}`, title: pick(m, lang), done: (current / target) * 3 > j })) }));
   const notes = [{ id: 'demo_n0', title: pick(['Ideas', 'أفكار'], lang), content: '# Ideas\n- Weekly review\n- **Deep work** mornings', pinned: true, tags: ['ideas'], updatedAt: ago(1) }, { id: 'demo_n1', title: pick(['Meeting notes', 'ملاحظات اجتماع'], lang), content: '## Notes\n1. Follow up\n2. Send summary', pinned: false, tags: ['work'], updatedAt: ago(3) }];
   const sessions = Array.from({ length: 21 }, (_, d) => d).flatMap((d) => Array.from({ length: d === 0 ? 2 : Math.floor(r(d + 7) * 4) + 1 }, (_, k) => ({ id: `demo_s${d}_${k}`, duration: 25, completedAt: ago(d, 9 + k * 2) })));
-  return { tasks, habits, goals, notes, sessions };
+  return { tasks, habits, goals, notes, sessions, events: [] };
 }
