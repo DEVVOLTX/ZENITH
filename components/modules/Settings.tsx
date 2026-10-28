@@ -13,13 +13,13 @@ import { TemplatePicker } from '../Onboarding';
 export default function Settings() {
   const s = useStore(); const t = useT(); const file = useRef<HTMLInputElement>(null); const [err, setErr] = useState(''); const hasSample = s.tasks.some((x) => x.id.startsWith('demo_'));
   const exportJson = () => {
-    const { tasks, habits, goals, notes, sessions, settings } = s;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ tasks, habits, goals, notes, sessions, settings }, null, 2)], { type: 'application/json' }));
-    a.download = `zenith-backup-${new Date().toISOString().slice(0, 10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+    const { tasks, habits, goals, notes, sessions, events, settings } = s;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify({ tasks, habits, goals, notes, sessions, events, settings }, null, 2)], { type: 'application/json' }));
+    a.download = `zenith-backup-${new Date().toISOString().slice(0, 10)}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   };
   const importJson = async (f?: File) => {
     if (!f) return; setErr('');
-    try { const d = JSON.parse(await f.text()); if (!['tasks', 'habits', 'goals', 'notes', 'sessions'].every((k) => d[k] === undefined || Array.isArray(d[k]))) throw 0; s.importData(d); } catch { setErr(t('importFail')); }
+    try { const d = JSON.parse(await f.text()); if (!d || typeof d !== 'object' || !['tasks', 'habits', 'goals', 'notes', 'sessions', 'events'].every((k) => d[k] === undefined || Array.isArray(d[k]))) throw 0; s.importData(d); } catch { setErr(t('importFail')); }
   };
   return (
     <div className="mx-auto max-w-2xl space-y-3">

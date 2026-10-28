@@ -6,7 +6,7 @@ import { ar, enUS } from 'date-fns/locale';
 import { Flame, Timer, Circle, CheckCircle2, Share2, Sparkles } from 'lucide-react';
 import { useTimer } from '@/lib/timer';
 import { TemplatePicker } from '../Onboarding';
-import { useStore, pct } from '@/lib/store';
+import { useStore, pct, calcStreak } from '@/lib/store';
 import { useT } from '@/lib/i18n';
 import { cn, dkey, isDay } from '@/lib/utils';
 import { subDays, startOfWeek, addDays } from 'date-fns';
@@ -26,7 +26,7 @@ export default function Dashboard() {
   const list = dkey(sd) !== today ? tasks.filter((x) => x.dueDate === dkey(sd)).sort((a, b) => (a.dueTime ?? '99').localeCompare(b.dueTime ?? '99')).slice(0, 5) : tasks.filter((x) => !x.completed).sort((a, b) => Number(!(a.dueDate && a.dueDate <= today)) - Number(!(b.dueDate && b.dueDate <= today))).slice(0, 3);
   const doneToday = habits.filter((h) => h.completions.includes(today)).length;
   const focus = sessions.filter((s) => isDay(s.completedAt, today)).reduce((a, s) => a + s.duration, 0) + (tm.mode === 'focus' && tm.running ? Math.floor((tm.total - tm.left) / 60) : 0);
-  const streak = Math.max(0, ...habits.map((h) => h.streak));
+  const streak = Math.max(0, ...habits.map((h) => calcStreak(h.completions, h.frozen)));
   const gp = goals.length ? Math.round(goals.reduce((a, g) => a + pct(g), 0) / goals.length) : 0;
   const score = (x: (typeof tasks)[number]) => ({ urgent: 40, high: 30, med: 15, low: 5 }[x.priority]) + (x.dueDate ? (x.dueDate < today ? 50 : x.dueDate === today ? 35 : 0) : 0);
   const plan = tasks.filter((x) => !x.completed).sort((a, b) => score(b) - score(a)).slice(0, 3);

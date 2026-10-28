@@ -2,7 +2,7 @@
 import { useCallback, useState } from 'react';
 import { Flame, Trash2, Check } from 'lucide-react';
 import { eachDayOfInterval, startOfWeek, subWeeks, subDays } from 'date-fns';
-import { useStore, bestStreak } from '@/lib/store';
+import { useStore, bestStreak, calcStreak } from '@/lib/store';
 import { useT } from '@/lib/i18n';
 import { cn, dkey } from '@/lib/utils';
 import { Card, Button, PageTitle, Empty } from '../ui';
@@ -36,7 +36,7 @@ export default function Habits() {
             <Card key={h.id} className={cn('flex items-center gap-3 p-3', cur?.id === h.id && 'ring-1 ring-primary')}>
               <button onClick={() => toggleHabit(h.id)} aria-label="toggle" className="grid h-9 w-9 place-items-center rounded-xl border-2 transition" style={{ borderColor: h.color, background: done ? h.color : 'transparent' }}>{done && <Check size={18} className="text-white" />}</button>
               <button onClick={() => setSel(h.id)} className="flex-1 text-start"><p className="text-sm font-medium">{h.icon} {h.name}</p><p className="text-xs text-fg/50">{t('dailyTracking')}</p></button>
-              <span className="flex items-center gap-1 font-bold text-orange-500"><Flame size={18} />{h.streak}</span>
+              <span className="flex items-center gap-1 font-bold text-orange-500"><Flame size={18} />{calcStreak(h.completions, h.frozen)}</span>
               {canFreeze && <button onClick={() => freezeHabit(h.id)} title={`${t('freeze')} · ${leftF} ${t('left')}`} className="rounded-lg bg-sky-400/20 px-2 py-1 text-xs text-sky-400">❄️ {leftF}</button>}
               <button onClick={() => delHabit(h.id)} className="rounded-lg p-1.5 text-red-500 hover:bg-red-500/10" aria-label="delete"><Trash2 size={15} /></button>
             </Card>
