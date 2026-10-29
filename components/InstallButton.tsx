@@ -13,6 +13,7 @@ export default function InstallButton({ lang }: { lang: string }) {
   const [installed, setInstalled] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const ar = lang === 'ar';
+  const ios = typeof navigator !== 'undefined' && /iphone|ipad|ipod/i.test(navigator.userAgent);
 
   useEffect(() => {
     const onBeforeInstall = (event: Event) => {
@@ -49,14 +50,14 @@ export default function InstallButton({ lang }: { lang: string }) {
 
   return (
     <div className="relative shrink-0">
-      <button onClick={handleInstall} className="flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:opacity-90" aria-expanded={helpOpen}>
+      <button onClick={handleInstall} className="flex items-center gap-1.5 rounded-xl bg-primary px-3 py-2 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition hover:opacity-90" aria-expanded={helpOpen} aria-label={ar ? 'تثبيت التطبيق' : 'Install app'}>
         {installPrompt ? <Download size={16} /> : <Smartphone size={16} />}
-        <span>{ar ? 'تثبيت' : 'Install'}</span>
+        <span className="hidden sm:inline">{ar ? 'تثبيت' : 'Install'}</span>
       </button>
       {helpOpen && !installPrompt && (
         <div className="glass absolute end-0 top-12 z-50 w-64 rounded-2xl border p-3 text-sm shadow-2xl">
           <p className="mb-2 font-semibold">{ar ? 'إضافة Zenith للشاشة الرئيسية' : 'Add Zenith to Home Screen'}</p>
-          <p className="text-fg/70">{ar ? 'من قائمة المتصفح ⋮ اختار «إضافة إلى الشاشة الرئيسية» أو «تثبيت التطبيق» إذا ظهر الخيار.' : 'Open the browser menu ⋮ and choose “Add to Home screen” or “Install app” if available.'}</p>
+          <p className="text-fg/70">{ios ? (ar ? 'اضغط زر المشاركة في Safari ثم «إضافة إلى الشاشة الرئيسية».' : 'Tap the Share button in Safari, then “Add to Home Screen”.') : (ar ? 'من قائمة المتصفح ⋮ اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».' : 'Open the browser menu ⋮ and choose “Install app” or “Add to Home screen”.')}</p>
           <button onClick={() => setHelpOpen(false)} className="mt-3 rounded-lg bg-fg/10 px-3 py-1.5">{ar ? 'تمام' : 'Got it'}</button>
         </div>
       )}
